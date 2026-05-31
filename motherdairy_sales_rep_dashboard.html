@@ -1,0 +1,542 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.phone{width:360px;margin:0 auto;background:var(--color-background-tertiary);border-radius:32px;border:1.5px solid var(--color-border-secondary);overflow:hidden;position:relative}
+.screen{display:none;flex-direction:column;height:720px;overflow:hidden}
+.screen.active{display:flex}
+.statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-size:12px;font-weight:500;color:var(--color-text-secondary);flex-shrink:0}
+.scrollable{flex:1;overflow-y:auto;padding-bottom:80px}
+.scrollable::-webkit-scrollbar{display:none}
+.topbar{padding:16px 20px 12px;background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);flex-shrink:0}
+.topbar-row{display:flex;align-items:center;justify-content:space-between}
+.screen-title{font-size:17px;font-weight:500;color:var(--color-text-primary)}
+.screen-sub{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.avatar{width:34px;height:34px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#0F6E56}
+.section{padding:16px 16px 0}
+.section-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.kpi-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.kpi-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.kpi-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.kpi-val{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.kpi-sub{font-size:11px;margin-top:3px}
+.kpi-up{color:#0F6E56}.kpi-down{color:#A32D2D}.kpi-neu{color:var(--color-text-secondary)}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px;margin-bottom:10px}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.card-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:500}
+.badge-green{background:#EAF3DE;color:#3B6D11}
+.badge-amber{background:#FAEEDA;color:#854F0B}
+.badge-blue{background:#E6F1FB;color:#185FA5}
+.badge-red{background:#FCEBEB;color:#A32D2D}
+.dist-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.dist-row:last-child{border-bottom:none}
+.dist-init{width:32px;height:32px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#185FA5;flex-shrink:0}
+.dist-name{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.dist-meta{font-size:11px;color:var(--color-text-secondary)}
+.dist-right{margin-left:auto;text-align:right}
+.dist-val{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.dist-lift{font-size:11px;color:#0F6E56}
+.progress-wrap{margin-bottom:14px}
+.progress-row{display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary);margin-bottom:5px}
+.progress-bar{height:6px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;background:#1D9E75}
+.alert-card{background:#EAF3DE;border:0.5px solid #C0DD97;border-radius:var(--border-radius-md);padding:10px 12px;margin-bottom:10px;display:flex;align-items:flex-start;gap:8px}
+.alert-card.warn{background:#FAEEDA;border-color:#FAC775}
+.alert-icon{font-size:16px;margin-top:1px}
+.alert-icon.green{color:#3B6D11}.alert-icon.amber{color:#854F0B}
+.alert-text{font-size:12px;color:var(--color-text-primary);line-height:1.5}
+.tab-row{display:flex;gap:6px;margin-bottom:14px}
+.tab{font-size:12px;padding:5px 12px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer}
+.tab.active-tab{background:#1D9E75;border-color:#1D9E75;color:#fff}
+.stat-row{display:flex;gap:8px;margin-bottom:14px}
+.stat-box{flex:1;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px}
+.stat-lbl{font-size:10px;color:var(--color-text-secondary);margin-bottom:2px}
+.stat-val{font-size:16px;font-weight:500;color:var(--color-text-primary)}
+.stat-chg{font-size:11px;margin-top:2px}
+.sku-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.sku-row:last-child{border-bottom:none}
+.sku-name{font-size:12px;color:var(--color-text-primary);flex:1}
+.sku-bar-wrap{width:80px;height:5px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden}
+.sku-bar-fill{height:100%;border-radius:4px;background:#378ADD}
+.sku-vol{font-size:11px;color:var(--color-text-secondary);width:52px;text-align:right}
+.rec-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px;margin-bottom:10px}
+.rec-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.rec-sku{font-size:13px;font-weight:500;color:var(--color-text-primary);flex:1;margin-right:8px}
+.rec-type-cross{background:#E1F5EE;color:#085041;font-size:10px;padding:3px 8px;border-radius:20px;white-space:nowrap;font-weight:500}
+.rec-type-up{background:#E6F1FB;color:#0C447C;font-size:10px;padding:3px 8px;border-radius:20px;white-space:nowrap;font-weight:500}
+.rec-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:8px}
+.rec-metric{background:var(--color-background-secondary);border-radius:6px;padding:7px 8px}
+.rec-metric-lbl{font-size:10px;color:var(--color-text-secondary);margin-bottom:2px}
+.rec-metric-val{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.rec-driver{font-size:11px;color:var(--color-text-secondary);line-height:1.5}
+.conf-bar-wrap{height:4px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;margin-top:4px}
+.conf-bar{height:100%;border-radius:4px}
+.lift-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:14px 16px;margin-bottom:14px}
+.lift-row{display:flex;align-items:center;gap:8px}
+.lift-x{font-size:22px;font-weight:500;color:var(--color-text-secondary)}
+.lift-arrow{font-size:18px;color:#1D9E75}
+.lift-y{font-size:22px;font-weight:500;color:#0F6E56}
+.lift-pct{font-size:12px;color:#0F6E56;background:#E1F5EE;padding:3px 10px;border-radius:20px;margin-left:auto}
+.slider-wrap{margin-bottom:16px}
+.slider-label-row{display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary);margin-bottom:6px}
+.slider-val{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+input[type=range]{width:100%}
+.navbar{position:absolute;bottom:0;left:0;right:0;height:72px;background:var(--color-background-primary);border-top:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-around;padding-bottom:8px}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;padding:8px 16px;border-radius:var(--border-radius-md);color:var(--color-text-tertiary)}
+.nav-btn.nav-active{color:#1D9E75}
+.nav-btn i{font-size:22px}
+.nav-lbl{font-size:10px}
+.sep{height:0.5px;background:var(--color-border-tertiary);margin:4px 0 12px}
+</style>
+
+<h2 class="sr-only">Mother Dairy field sales mobile dashboard with three screens: home KPIs, distributor 360 view, and sales uplift recommendations</h2>
+
+<div class="phone">
+  <div class="screen active" id="s1">
+    <div class="statusbar"><span>9:41</span><span><i class="ti ti-wifi" aria-hidden="true"></i> <i class="ti ti-battery" aria-hidden="true"></i></span></div>
+    <div class="topbar">
+      <div class="topbar-row">
+        <div>
+          <div class="screen-title">Good morning, Ramesh 👋</div>
+          <div class="screen-sub">Monday, 2 Jun 2025 &nbsp;·&nbsp; Delhi South route</div>
+        </div>
+        <div class="avatar">RS</div>
+      </div>
+    </div>
+    <div class="scrollable">
+      <div class="section">
+        <div class="section-label">Today's route</div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Distributors to visit</div>
+            <div class="kpi-val">8</div>
+            <div class="kpi-sub kpi-neu">3 high priority</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Baseline forecast (X)</div>
+            <div class="kpi-val">₹12.3L</div>
+            <div class="kpi-sub kpi-up"><i class="ti ti-trending-up" aria-hidden="true"></i> +8% vs last week</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Target potential (Y)</div>
+            <div class="kpi-val">₹18.6L</div>
+            <div class="kpi-sub kpi-up">+51% uplift possible</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Pitches to close</div>
+            <div class="kpi-val">91</div>
+            <div class="kpi-sub kpi-neu">across route</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">MTD performance</div>
+        <div class="progress-wrap card">
+          <div class="progress-row"><span>MTD revenue</span><span style="font-weight:500">₹94.2L / ₹120L</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:78%"></div></div>
+          <div style="font-size:11px;color:#0F6E56;margin-top:5px">78% of monthly target · 22% gap in 6 days</div>
+          <div class="sep"></div>
+          <div class="progress-row"><span>Cross-sell conversions</span><span style="font-weight:500">12 / 28</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:43%;background:#378ADD"></div></div>
+          <div style="font-size:11px;color:#185FA5;margin-top:5px">43% · 16 open opportunities</div>
+          <div class="sep"></div>
+          <div class="progress-row"><span>Up-sell closures</span><span style="font-weight:500">19 / 35</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:54%;background:#BA7517"></div></div>
+          <div style="font-size:11px;color:#854F0B;margin-top:5px">54% conversion rate</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Context signals</div>
+        <div class="alert-card">
+          <i class="ti ti-sun alert-icon green" aria-hidden="true"></i>
+          <div class="alert-text"><strong>40°C forecast today</strong> — peak heat signal. Lassi, Chaach &amp; beverage pitches carry +25% propensity boost.</div>
+        </div>
+        <div class="alert-card warn">
+          <i class="ti ti-calendar alert-icon amber" aria-hidden="true"></i>
+          <div class="alert-text"><strong>Eid Al-Adha in 4 days</strong> — festival surge expected. Premium curd, paneer &amp; condensed milk in demand.</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Today's visits</div>
+        <div class="card" style="padding:0 16px">
+          <div class="dist-row" style="cursor:pointer" onclick="showScreen(2)">
+            <div class="dist-init">NG</div>
+            <div><div class="dist-name">Napender Goswami</div><div class="dist-meta">Delhi West · Ter-5 &nbsp;·&nbsp; <span style="color:#0F6E56">2 cross-sell + 2 up-sell</span></div></div>
+            <div class="dist-right"><div class="dist-val">₹5.57L</div><div class="dist-lift">+₹20k lift</div></div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-init">KP</div>
+            <div><div class="dist-name">Kunwar Pal 2</div><div class="dist-meta">Delhi South · 38A &nbsp;·&nbsp; <span style="color:#185FA5">5 up-sell</span></div></div>
+            <div class="dist-right"><div class="dist-val">₹10.55L</div><div class="dist-lift">+₹22k lift</div></div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-init">BT</div>
+            <div><div class="dist-name">Bhushan Dairy Shop</div><div class="dist-meta">Delhi South · 14A &nbsp;·&nbsp; <span style="color:#185FA5">5 up-sell</span></div></div>
+            <div class="dist-right"><div class="dist-val">₹47.3L</div><div class="dist-lift">+₹39k lift</div></div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-init">GE</div>
+            <div><div class="dist-name">Goyal Enterprises</div><div class="dist-meta">Delhi South · 31A &nbsp;·&nbsp; <span style="color:#0F6E56">1 cross-sell + 4 up-sell</span></div></div>
+            <div class="dist-right"><div class="dist-val">₹8.2L</div><div class="dist-lift">+₹18k lift</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="navbar">
+      <button class="nav-btn nav-active" onclick="showScreen(1)" aria-label="Home"><i class="ti ti-home" aria-hidden="true"></i><span class="nav-lbl">Home</span></button>
+      <button class="nav-btn" onclick="showScreen(2)" aria-label="Distributor 360"><i class="ti ti-users" aria-hidden="true"></i><span class="nav-lbl">Distributor</span></button>
+      <button class="nav-btn" onclick="showScreen(3)" aria-label="Uplift"><i class="ti ti-trending-up" aria-hidden="true"></i><span class="nav-lbl">Uplift</span></button>
+      <button class="nav-btn" aria-label="Settings"><i class="ti ti-settings" aria-hidden="true"></i><span class="nav-lbl">Settings</span></button>
+    </div>
+  </div>
+
+  <div class="screen" id="s2">
+    <div class="statusbar"><span>9:41</span><span><i class="ti ti-wifi" aria-hidden="true"></i> <i class="ti ti-battery" aria-hidden="true"></i></span></div>
+    <div class="topbar">
+      <div class="topbar-row">
+        <div style="display:flex;align-items:center;gap:10px">
+          <button onclick="showScreen(1)" style="background:none;border:none;cursor:pointer;color:var(--color-text-secondary);font-size:20px;padding:0;line-height:1" aria-label="Back"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
+          <div>
+            <div class="screen-title">Napender Goswami</div>
+            <div class="screen-sub">Delhi West · Ter-5 &nbsp;·&nbsp; Dist ID 70305</div>
+          </div>
+        </div>
+        <span class="badge badge-green">Active</span>
+      </div>
+    </div>
+    <div class="scrollable">
+      <div class="section">
+        <div class="stat-row">
+          <div class="stat-box">
+            <div class="stat-lbl">Baseline today (X)</div>
+            <div class="stat-val">₹5.37L</div>
+            <div class="stat-chg kpi-neu" style="font-size:10px">Weekday · non-festive</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-lbl">Target (Y)</div>
+            <div class="stat-val" style="color:#0F6E56">₹5.57L</div>
+            <div class="stat-chg" style="font-size:10px;color:#0F6E56">+₹20k potential</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-lbl">Pitches</div>
+            <div class="stat-val">5</div>
+            <div class="stat-chg kpi-neu" style="font-size:10px">2 cross + 2 up</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Distributor snapshot</div>
+        <div class="card" style="padding:12px 14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:12px">
+            <div><span style="color:var(--color-text-secondary)">Territory</span><br><span style="font-weight:500">Delhi West MK Ter-5</span></div>
+            <div><span style="color:var(--color-text-secondary)">Storage type</span><br><span style="font-weight:500">Ambient + Chilled</span></div>
+            <div><span style="color:var(--color-text-secondary)">12-month value</span><br><span style="font-weight:500">₹62.4L</span></div>
+            <div><span style="color:var(--color-text-secondary)">Run-rate trend</span><br><span style="font-weight:500;color:#0F6E56">Accelerating ↑</span></div>
+            <div><span style="color:var(--color-text-secondary)">SKUs active</span><br><span style="font-weight:500">23 of 160</span></div>
+            <div><span style="color:var(--color-text-secondary)">Category gap</span><br><span style="font-weight:500;color:#854F0B">Ghee, Curd</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Revenue trend — last 8 months</div>
+        <div class="card" style="padding:12px 14px">
+          <div style="position:relative;width:100%;height:130px">
+            <canvas id="trendChart" role="img" aria-label="Bar chart showing Napender Goswami monthly revenue from Oct 2024 to May 2025, rising from 4.1 to 6.2 lakh">Monthly revenue Oct 4.1L, Nov 4.4L, Dec 4.8L, Jan 5.0L, Feb 5.3L, Mar 5.8L, Apr 6.0L, May 6.2L.</canvas>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Top products by volume</div>
+        <div class="card" style="padding:8px 14px">
+          <div class="sku-row">
+            <div class="sku-name">Toned Milk 6L pouch</div>
+            <div class="sku-bar-wrap"><div class="sku-bar-fill" style="width:100%"></div></div>
+            <div class="sku-vol">332 units</div>
+          </div>
+          <div class="sku-row">
+            <div class="sku-name">FCM ½ L</div>
+            <div class="sku-bar-wrap"><div class="sku-bar-fill" style="width:82%"></div></div>
+            <div class="sku-vol">272 units</div>
+          </div>
+          <div class="sku-row">
+            <div class="sku-name">Cow Milk ½ L (H)</div>
+            <div class="sku-bar-wrap"><div class="sku-bar-fill" style="width:68%"></div></div>
+            <div class="sku-vol">226 units</div>
+          </div>
+          <div class="sku-row">
+            <div class="sku-name">Mother Dairy Ghee 1L</div>
+            <div class="sku-bar-wrap"><div class="sku-bar-fill" style="width:43%"></div></div>
+            <div class="sku-vol">143 units</div>
+          </div>
+          <div class="sku-row">
+            <div class="sku-name">Super-T 140ml</div>
+            <div class="sku-bar-wrap"><div class="sku-bar-fill" style="width:31%"></div></div>
+            <div class="sku-vol">103 units</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Category penetration</div>
+        <div class="card" style="padding:12px 14px">
+          <div style="position:relative;width:100%;height:130px">
+            <canvas id="catChart" role="img" aria-label="Horizontal bar chart of category penetration: Milk 95%, Lassi 40%, Ghee 20%, Curd 0%, Paneer 0%">Milk 95%, Lassi 40%, Ghee 20%, Curd 0%, Paneer 0%.</canvas>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Peer comparison · Ter-5 route</div>
+        <div class="card" style="padding:12px 14px;font-size:12px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+            <span style="color:var(--color-text-secondary)">Metric</span>
+            <div style="display:flex;gap:24px">
+              <span style="color:var(--color-text-secondary)">This dist.</span>
+              <span style="color:var(--color-text-secondary)">Route avg</span>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary)">
+            <span>Avg monthly value</span>
+            <div style="display:flex;gap:24px"><span style="font-weight:500">₹5.7L</span><span style="color:var(--color-text-secondary)">₹5.1L</span></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid var(--color-border-tertiary)">
+            <span>SKU breadth</span>
+            <div style="display:flex;gap:24px"><span style="font-weight:500">23</span><span style="color:var(--color-text-secondary)">31</span></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0">
+            <span>Ghee adoption</span>
+            <div style="display:flex;gap:24px"><span style="font-weight:500;color:#A32D2D">20%</span><span style="color:var(--color-text-secondary)">100%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="navbar">
+      <button class="nav-btn" onclick="showScreen(1)" aria-label="Home"><i class="ti ti-home" aria-hidden="true"></i><span class="nav-lbl">Home</span></button>
+      <button class="nav-btn nav-active" onclick="showScreen(2)" aria-label="Distributor 360"><i class="ti ti-users" aria-hidden="true"></i><span class="nav-lbl">Distributor</span></button>
+      <button class="nav-btn" onclick="showScreen(3)" aria-label="Uplift"><i class="ti ti-trending-up" aria-hidden="true"></i><span class="nav-lbl">Uplift</span></button>
+      <button class="nav-btn" aria-label="Settings"><i class="ti ti-settings" aria-hidden="true"></i><span class="nav-lbl">Settings</span></button>
+    </div>
+  </div>
+
+  <div class="screen" id="s3">
+    <div class="statusbar"><span>9:41</span><span><i class="ti ti-wifi" aria-hidden="true"></i> <i class="ti ti-battery" aria-hidden="true"></i></span></div>
+    <div class="topbar">
+      <div class="topbar-row">
+        <div style="display:flex;align-items:center;gap:10px">
+          <button onclick="showScreen(2)" style="background:none;border:none;cursor:pointer;color:var(--color-text-secondary);font-size:20px;padding:0;line-height:1" aria-label="Back"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
+          <div>
+            <div class="screen-title">Sales uplift</div>
+            <div class="screen-sub">Napender Goswami · what-if simulator</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="scrollable">
+      <div class="section">
+        <div class="lift-box">
+          <div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:6px">Revenue potential today</div>
+          <div class="lift-row">
+            <div>
+              <div style="font-size:10px;color:var(--color-text-secondary)">Baseline (X)</div>
+              <div class="lift-x" id="xVal">₹5.37L</div>
+            </div>
+            <i class="ti ti-arrow-right lift-arrow" aria-hidden="true"></i>
+            <div>
+              <div style="font-size:10px;color:#0F6E56">Target (Y)</div>
+              <div class="lift-y" id="yVal">₹5.57L</div>
+            </div>
+            <div class="lift-pct" id="liftPct">+3.7%</div>
+          </div>
+          <div style="height:1px;background:var(--color-border-tertiary);margin:12px 0"></div>
+          <div style="display:flex;gap:8px">
+            <div style="flex:1;text-align:center">
+              <div style="font-size:10px;color:var(--color-text-secondary)">Incremental</div>
+              <div style="font-size:16px;font-weight:500;color:#0F6E56" id="incVal">+₹19.9k</div>
+            </div>
+            <div style="flex:1;text-align:center">
+              <div style="font-size:10px;color:var(--color-text-secondary)">Pitches closed</div>
+              <div style="font-size:16px;font-weight:500;color:var(--color-text-primary)" id="pitchCount">5 / 5</div>
+            </div>
+            <div style="flex:1;text-align:center">
+              <div style="font-size:10px;color:var(--color-text-secondary)">Confidence</div>
+              <div style="font-size:16px;font-weight:500;color:#185FA5">51%</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:12px">What-if: adjust pitches you'll close</div>
+          <div class="slider-wrap">
+            <div class="slider-label-row"><span>Cross-sell pitches</span><span class="slider-val" id="csLbl">3 of 3</span></div>
+            <input type="range" min="0" max="3" value="3" step="1" id="csSlider" aria-label="Cross-sell pitches to close">
+          </div>
+          <div class="slider-wrap">
+            <div class="slider-label-row"><span>Up-sell pitches</span><span class="slider-val" id="usLbl">2 of 2</span></div>
+            <input type="range" min="0" max="2" value="2" step="1" id="usSlider" aria-label="Up-sell pitches to close">
+          </div>
+          <div style="height:4px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;margin-top:4px">
+            <div id="potBar" style="height:100%;background:#1D9E75;border-radius:4px;transition:width .25s;width:100%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Recommendations</div>
+        <div class="rec-card">
+          <div class="rec-head">
+            <div class="rec-sku">Cow Ghee 1L Ceka Pack</div>
+            <span class="rec-type-cross">Cross-sell</span>
+          </div>
+          <div class="rec-metrics">
+            <div class="rec-metric"><div class="rec-metric-lbl">Volume</div><div class="rec-metric-val">9.5 units</div></div>
+            <div class="rec-metric"><div class="rec-metric-lbl">Value</div><div class="rec-metric-val">₹4,940</div></div>
+            <div class="rec-metric"><div class="rec-metric-lbl">Confidence</div><div class="rec-metric-val">46%</div></div>
+          </div>
+          <div class="rec-driver"><i class="ti ti-users" style="font-size:12px" aria-hidden="true"></i> 100% of peers on Ter-5 stock this. Zero penetration here — clear white-space gap.</div>
+          <div class="conf-bar-wrap"><div class="conf-bar" style="width:46%;background:#1D9E75"></div></div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-head">
+            <div class="rec-sku">Curd 5 kg (institutional)</div>
+            <span class="rec-type-cross">Cross-sell</span>
+          </div>
+          <div class="rec-metrics">
+            <div class="rec-metric"><div class="rec-metric-lbl">Volume</div><div class="rec-metric-val">71 units</div></div>
+            <div class="rec-metric"><div class="rec-metric-lbl">Value</div><div class="rec-metric-val">₹4,673</div></div>
+            <div class="rec-metric"><div class="rec-metric-lbl">Confidence</div><div class="rec-metric-val">46%</div></div>
+          </div>
+          <div class="rec-driver"><i class="ti ti-sun" style="font-size:12px" aria-hidden="true"></i> Festival Eid surge + 40°C heat boosts curd demand. Peer adoption 100%.</div>
+          <div class="conf-bar-wrap"><div class="conf-bar" style="width:46%;background:#1D9E75"></div></div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-head">
+            <div class="rec-sku">Cow Ghee 500ml Ceka Pack</div>
+            <span class="rec-type-cross">Cross-sell</span>
+          </div>
+          <div class="rec-metrics">
+            <div class="rec-metric"><div class="rec-metric-lbl">Volume</div><div class="rec-metric-val">7.5 units</div></div>
+            <div class="rec-metric"><div class="rec-metric-lbl">Value</div><div class="rec-metric-val">₹3,938</div></div>
+            <div class="rec-metric"><div class="rec-metric-lbl">Confidence</div><div class="rec-metric-val">46%</div></div>
+          </div>
+          <div class="rec-driver"><i class="ti ti-users" style="font-size:12px" aria-hidden="true"></i> Entry-point SKU for ghee category. Peers at 100% adoption; distributor at 0%.</div>
+          <div class="conf-bar-wrap"><div class="conf-bar" style="width:46%;background:#1D9E75"></div></div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-head">
+            <div class="rec-sku">Toned Milk 6L pouch</div>
+            <span class="rec-type-up">Up-sell +20%</span>
+          </div>
+          <div class="rec-metrics">
+            <div class="rec-metric"><div class="rec-metric-lbl">Volume</div><div class="rec-metric-val">66 units</div></div>
+            <div class="rec-metric"><div class="rec-metric-lbl">Value</div><div class="rec-metric-val">₹3,258</div></div>
+            <div class="rec-metric"><div class="rec-metric-lbl">Confidence</div><div class="rec-metric-val">58%</div></div>
+          </div>
+          <div class="rec-driver"><i class="ti ti-trending-up" style="font-size:12px" aria-hidden="true"></i> Sales accelerating 2.27× month-on-month. Pitch 20% volume expansion (330→396 units).</div>
+          <div class="conf-bar-wrap"><div class="conf-bar" style="width:58%;background:#378ADD"></div></div>
+        </div>
+        <div class="rec-card">
+          <div class="rec-head">
+            <div class="rec-sku">M.Dairy Ghee 1L Ceka-Agmark</div>
+            <span class="rec-type-up">Up-sell +20%</span>
+          </div>
+          <div class="rec-metrics">
+            <div class="rec-metric"><div class="rec-metric-lbl">Volume</div><div class="rec-metric-val">6.2 units</div></div>
+            <div class="rec-metric"><div class="rec-metric-lbl">Value</div><div class="rec-metric-val">₹3,147</div></div>
+            <div class="rec-metric"><div class="rec-metric-lbl">Confidence</div><div class="rec-metric-val">56%</div></div>
+          </div>
+          <div class="rec-driver"><i class="ti ti-trending-up" style="font-size:12px" aria-hidden="true"></i> MoM acceleration 2.07×. Strong Eid signal for premium ghee category.</div>
+          <div class="conf-bar-wrap"><div class="conf-bar" style="width:56%;background:#378ADD"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="navbar">
+      <button class="nav-btn" onclick="showScreen(1)" aria-label="Home"><i class="ti ti-home" aria-hidden="true"></i><span class="nav-lbl">Home</span></button>
+      <button class="nav-btn" onclick="showScreen(2)" aria-label="Distributor 360"><i class="ti ti-users" aria-hidden="true"></i><span class="nav-lbl">Distributor</span></button>
+      <button class="nav-btn nav-active" onclick="showScreen(3)" aria-label="Uplift"><i class="ti ti-trending-up" aria-hidden="true"></i><span class="nav-lbl">Uplift</span></button>
+      <button class="nav-btn" aria-label="Settings"><i class="ti ti-settings" aria-hidden="true"></i><span class="nav-lbl">Settings</span></button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+function showScreen(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>{
+    b.classList.toggle('nav-active',i===n-1);
+  });
+}
+
+const isDark=matchMedia('(prefers-color-scheme: dark)').matches;
+const gridColor=isDark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)';
+const labelColor=isDark?'#9E9E9E':'#888780';
+const barColor='#1D9E75';
+
+new Chart(document.getElementById('trendChart'),{
+  type:'bar',
+  data:{
+    labels:['Oct','Nov','Dec','Jan','Feb','Mar','Apr','May'],
+    datasets:[{
+      label:'Monthly revenue (₹L)',
+      data:[4.1,4.4,4.8,5.0,5.3,5.8,6.0,6.2],
+      backgroundColor:['#9FE1CB','#9FE1CB','#9FE1CB','#9FE1CB','#9FE1CB','#5DCAA5','#5DCAA5','#1D9E75'],
+      borderRadius:4,borderSkipped:false
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>'₹'+v.raw+'L'}}},
+    scales:{
+      x:{grid:{display:false},ticks:{color:labelColor,font:{size:10}}},
+      y:{grid:{color:gridColor},ticks:{color:labelColor,font:{size:10},callback:v=>'₹'+v+'L'},border:{display:false}}
+    }
+  }
+});
+
+new Chart(document.getElementById('catChart'),{
+  type:'bar',
+  data:{
+    labels:['Milk','Lassi','Ghee','Curd','Paneer'],
+    datasets:[{
+      label:'Penetration %',
+      data:[95,40,20,0,0],
+      backgroundColor:['#1D9E75','#5DCAA5','#FAC775','#F09595','#F09595'],
+      borderRadius:4,borderSkipped:false
+    }]
+  },
+  options:{
+    indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>v.raw+'%'}}},
+    scales:{
+      x:{max:100,grid:{color:gridColor},ticks:{color:labelColor,font:{size:10},callback:v=>v+'%'},border:{display:false}},
+      y:{grid:{display:false},ticks:{color:labelColor,font:{size:10}}}
+    }
+  }
+});
+
+const BASE=537000;
+const CS_VALS=[4940,4673,3938];
+const US_VALS=[3258,3147];
+const csSlider=document.getElementById('csSlider');
+const usSlider=document.getElementById('usSlider');
+
+function updateLift(){
+  const cs=parseInt(csSlider.value);
+  const us=parseInt(usSlider.value);
+  document.getElementById('csLbl').textContent=cs+' of 3';
+  document.getElementById('usLbl').textContent=us+' of 2';
+  const csTotal=CS_VALS.slice(0,cs).reduce((a,b)=>a+b,0);
+  const usTotal=US_VALS.slice(0,us).reduce((a,b)=>a+b,0);
+  const inc=csTotal+usTotal;
+  const y=BASE+inc;
+  const pct=((inc/BASE)*100).toFixed(1);
+  document.getElementById('yVal').textContent='₹'+Math.round(y/1000)/100+'L';
+  document.getElementById('incVal').textContent='+₹'+Math.round(inc/100)*100/1000+'k';
+  document.getElementById('liftPct').textContent='+'+pct+'%';
+  document.getElementById('pitchCount').textContent=(cs+us)+' / 5';
+  const maxInc=CS_VALS.reduce((a,b)=>a+b,0)+US_VALS.reduce((a,b)=>a+b,0);
+  document.getElementById('potBar').style.width=Math.round(maxInc>0?inc/maxInc*100:0)+'%';
+}
+
+csSlider.addEventListener('input',updateLift);
+usSlider.addEventListener('input',updateLift);
+updateLift();
+</script>
