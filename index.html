@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#eef0f2">
+<title>Mother Dairy — Field Sales Dashboard (Inter)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<style>
+/* Ensure icon glyphs use the Tabler font reliably */
+.ti{font-family:'tabler-icons' !important;speak:none;font-style:normal;font-weight:400;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:1;display:inline-block}
+</style>
+<style>
+:root{
+  --green:#0F8A63; --green-dark:#0B6B4D; --green-soft:#E1F5EE;
+  --blue:#1C6FC2; --blue-dark:#0C447C; --blue-soft:#E6F1FB;
+  --amber:#A8690B; --amber-soft:#FBEFD8;
+  --red:#B3322D;
+  --ink:#16201C; --ink-2:#5A6560; --ink-3:#8A938E;
+  --bg:#eef0f2; --surface:#ffffff; --surface-2:#f4f6f7;
+  --line:#e2e6e8;
+  --r-md:14px; --r-lg:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:#cfd4d8;
+  color:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Phone frame — iPhone 16 Pro logical resolution 402 x 874 */
+.phone{
+  width:402px;max-width:100vw;height:100dvh;max-height:874px;
+  background:var(--bg);
+  position:relative;overflow:hidden;
+  border-radius:44px;
+  box-shadow:0 24px 70px rgba(0,0,0,.28);
+}
+/* On a real phone, fill the whole screen edge-to-edge */
+@media (max-width:600px){
+  body{background:var(--bg);display:block;align-items:stretch}
+  .phone{width:100vw;height:100dvh;max-height:none;border-radius:0;box-shadow:none}
+}
+
+.screen{display:none;flex-direction:column;height:100%;overflow:hidden}
+.screen.active{display:flex}
+
+/* scroll area — top padding accounts for the notch/Dynamic Island safe area */
+.scrollable{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding-top:max(20px, env(safe-area-inset-top));
+  padding-bottom:calc(96px + env(safe-area-inset-bottom));
+}
+.scrollable::-webkit-scrollbar{display:none}
+
+.section{padding:18px 18px 0}
+.section-label{font-size:13px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+
+/* simple back row that replaces the old top bar on detail screens */
+.back-row{display:flex;align-items:center;gap:12px;padding:6px 18px 0}
+.back-btn{background:none;border:none;cursor:pointer;color:var(--ink-2);font-size:26px;line-height:1;padding:4px}
+.back-title{font-size:22px;font-weight:700;color:var(--ink)}
+.back-sub{font-size:14px;color:var(--ink-2);margin-top:2px}
+.page-head{padding:8px 18px 0}
+.page-title{font-size:26px;font-weight:700;letter-spacing:-.3px}
+.page-sub{font-size:15px;color:var(--ink-2);margin-top:4px}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.kpi-card{background:var(--surface);border-radius:var(--r-md);padding:16px 16px;border:1px solid var(--line)}
+.kpi-label{font-size:14px;color:var(--ink-2);margin-bottom:7px;font-weight:500}
+.kpi-val{font-size:30px;font-weight:700;color:var(--ink);letter-spacing:-.5px}
+.kpi-sub{font-size:13px;margin-top:5px;font-weight:600}
+.kpi-up{color:var(--green)}.kpi-down{color:var(--red)}.kpi-neu{color:var(--ink-2)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 18px;margin-bottom:12px}
+.badge{font-size:13px;padding:5px 12px;border-radius:20px;font-weight:700}
+.badge-green{background:var(--green-soft);color:var(--green-dark)}
+
+.dist-row{display:flex;align-items:center;gap:13px;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.dist-row:last-child{border-bottom:none}
+.dist-init{width:42px;height:42px;border-radius:50%;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--blue-dark);flex-shrink:0}
+.dist-name{font-size:16px;font-weight:700;color:var(--ink)}
+.dist-meta{font-size:13px;color:var(--ink-2);margin-top:2px}
+.dist-right{margin-left:auto;text-align:right}
+.dist-val{font-size:16px;font-weight:700;color:var(--ink)}
+.dist-lift{font-size:13px;color:var(--green);font-weight:600;margin-top:2px}
+
+.progress-wrap{margin-bottom:14px}
+.progress-row{display:flex;justify-content:space-between;font-size:15px;color:var(--ink);margin-bottom:7px;font-weight:500}
+.progress-bar{height:9px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+.progress-fill{height:100%;border-radius:5px;background:var(--green)}
+.progress-note{font-size:13px;margin-top:7px;font-weight:600}
+
+.alert-card{background:var(--green-soft);border:1px solid #BDE3D4;border-radius:var(--r-md);padding:14px 14px;margin-bottom:12px;display:flex;align-items:flex-start;gap:11px}
+.alert-card.warn{background:var(--amber-soft);border-color:#F0D9A8}
+.alert-icon{font-size:22px;margin-top:1px}
+.alert-icon.green{color:var(--green-dark)}.alert-icon.amber{color:var(--amber)}
+.alert-text{font-size:15px;color:var(--ink);line-height:1.5}
+
+.stat-row{display:flex;gap:10px;margin-bottom:14px}
+.stat-box{flex:1;background:var(--surface);border-radius:var(--r-md);padding:14px 13px;border:1px solid var(--line)}
+.stat-lbl{font-size:12px;color:var(--ink-2);margin-bottom:4px;font-weight:600}
+.stat-val{font-size:21px;font-weight:700;color:var(--ink)}
+.stat-chg{font-size:12px;margin-top:3px;font-weight:600}
+
+.snap-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;font-size:15px}
+.snap-grid .k{color:var(--ink-2);font-size:13px}
+.snap-grid .v{font-weight:700;margin-top:2px}
+
+.sku-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.sku-row:last-child{border-bottom:none}
+.sku-name{font-size:15px;color:var(--ink);flex:1;font-weight:500}
+.sku-bar-wrap{width:84px;height:7px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+.sku-bar-fill{height:100%;border-radius:5px;background:var(--blue)}
+.sku-vol{font-size:13px;color:var(--ink-2);width:58px;text-align:right;font-weight:600}
+
+.cmp-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+.cmp-row:last-child{border-bottom:none}
+.cmp-vals{display:flex;gap:28px}
+.cmp-vals .me{font-weight:700}
+.cmp-vals .avg{color:var(--ink-2)}
+
+/* Previous orders */
+.order-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+.order-row:last-child{border-bottom:none}
+.order-date{width:54px;flex-shrink:0}
+.order-day{font-size:18px;font-weight:700;color:var(--ink);line-height:1}
+.order-mon{font-size:12px;color:var(--ink-2);font-weight:600;text-transform:uppercase}
+.order-mid{flex:1;min-width:0}
+.order-top{font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.order-meta{font-size:13px;color:var(--ink-2);margin-top:2px}
+.order-val{font-size:16px;font-weight:700;color:var(--ink);text-align:right;flex-shrink:0}
+
+.rec-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:15px 16px;margin-bottom:12px}
+.rec-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:11px}
+.rec-sku{font-size:16px;font-weight:700;color:var(--ink);flex:1;margin-right:10px}
+.rec-type-cross{background:var(--green-soft);color:var(--green-dark);font-size:12px;padding:5px 10px;border-radius:20px;white-space:nowrap;font-weight:700}
+.rec-type-up{background:var(--blue-soft);color:var(--blue-dark);font-size:12px;padding:5px 10px;border-radius:20px;white-space:nowrap;font-weight:700}
+.rec-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:11px}
+.rec-metric{background:var(--surface-2);border-radius:9px;padding:9px 9px}
+.rec-metric-lbl{font-size:12px;color:var(--ink-2);margin-bottom:3px;font-weight:600}
+.rec-metric-val{font-size:16px;font-weight:700;color:var(--ink)}
+.prio-high{color:var(--green)}
+.prio-med{color:#B8860B}
+.prio-low{color:var(--ink-3)}
+.rec-driver{font-size:14px;color:var(--ink-2);line-height:1.5;margin-bottom:7px}
+.conf-bar-wrap{height:6px;background:var(--surface-2);border-radius:5px;overflow:hidden;margin-top:3px}
+.conf-bar{height:100%;border-radius:5px}
+
+.lift-box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 18px;margin-bottom:14px}
+.lift-cap{font-size:13px;color:var(--ink-2);margin-bottom:9px;font-weight:600}
+.lift-row{display:flex;align-items:center;gap:12px}
+.lift-x{font-size:28px;font-weight:700;color:var(--ink-2)}
+.lift-arrow{font-size:22px;color:var(--green)}
+.lift-y{font-size:28px;font-weight:700;color:var(--green)}
+.lift-pct{font-size:15px;color:var(--green-dark);background:var(--green-soft);padding:5px 13px;border-radius:20px;margin-left:auto;font-weight:700}
+.lift-sub{display:flex;gap:10px;margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.lift-sub-box{flex:1;text-align:center}
+.lift-sub-lbl{font-size:12px;color:var(--ink-2);font-weight:600}
+.lift-sub-val{font-size:20px;font-weight:700;margin-top:3px}
+
+.slider-wrap{margin-bottom:18px}
+.slider-label-row{display:flex;justify-content:space-between;font-size:15px;color:var(--ink);margin-bottom:9px;font-weight:500}
+.slider-val{font-size:15px;font-weight:700;color:var(--ink)}
+input[type=range]{width:100%;height:30px;accent-color:var(--green)}
+.pot-track{height:7px;background:var(--surface-2);border-radius:5px;overflow:hidden;margin-top:4px}
+.pot-fill{height:100%;background:var(--green);border-radius:5px;transition:width .25s;width:100%}
+
+.sep{height:1px;background:var(--line);margin:8px 0 14px}
+
+/* Bottom navigation — kept intact, slightly enlarged */
+.navbar{
+  position:absolute;left:0;right:0;bottom:0;
+  height:calc(78px + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);
+  background:#ffffff;
+  border-top:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-around;
+}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:8px 16px;border-radius:var(--r-md);color:var(--ink-3)}
+.nav-btn.nav-active{color:var(--green)}
+.nav-btn i{font-size:22px}
+.nav-lbl{font-size:10px;font-weight:600}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+</style>
+</head>
+<body>
+<h1 class="sr-only">Mother Dairy field sales mobile dashboard: home KPIs, distributor 360, and sales uplift</h1>
+
+<div class="phone">
+
+  <!-- ============ SCREEN 1: HOME ============ -->
+  <div class="screen active" id="s1">
+    <div class="scrollable">
+      <div class="page-head">
+        <div class="page-title">Today's Route</div>
+        <div class="page-sub">Mon, 2 Jun 2025 · Delhi South</div>
+      </div>
+      <div class="section">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Distributors to visit</div>
+            <div class="kpi-val">8</div>
+            <div class="kpi-sub kpi-neu">3 high priority</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Expected orders (X)</div>
+            <div class="kpi-val">₹12.3L</div>
+            <div class="kpi-sub kpi-neu">≈ 2.4L units</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">If pitches close (Y)</div>
+            <div class="kpi-val">₹18.6L</div>
+            <div class="kpi-sub kpi-up">+51% · +0.9L units</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Pitches to close</div>
+            <div class="kpi-val">91</div>
+            <div class="kpi-sub kpi-neu">across route</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">MTD performance</div>
+        <div class="card">
+          <div class="progress-wrap">
+            <div class="progress-row"><span>MTD revenue</span><span style="font-weight:700">₹94.2L / ₹120L</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:78%"></div></div>
+            <div class="progress-note" style="color:var(--green)">78% of target · 22% gap in 6 days</div>
+          </div>
+          <div class="sep"></div>
+          <div class="progress-wrap">
+            <div class="progress-row"><span>Cross-sell conversions</span><span style="font-weight:700">12 / 28</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:43%;background:var(--blue)"></div></div>
+            <div class="progress-note" style="color:var(--blue)">43% · 16 open opportunities</div>
+          </div>
+          <div class="sep"></div>
+          <div class="progress-wrap" style="margin-bottom:0">
+            <div class="progress-row"><span>Up-sell closures</span><span style="font-weight:700">19 / 35</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:54%;background:var(--amber)"></div></div>
+            <div class="progress-note" style="color:var(--amber)">54% conversion rate</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Context signals</div>
+        <div class="alert-card">
+          <i class="ti ti-sun alert-icon green"></i>
+          <div class="alert-text"><strong>40°C forecast today</strong> — peak heat. Lassi, Chaach &amp; beverages get a +25% propensity boost.</div>
+        </div>
+        <div class="alert-card warn">
+          <i class="ti ti-calendar-event alert-icon amber"></i>
+          <div class="alert-text"><strong>Weekend approaching</strong> — Sat–Sun inventory cycles lift milk, curd &amp; paneer demand. Stock distributors ahead of the weekend run.</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Today's visits</div>
+        <div class="card" style="padding:0 18px">
+          <div class="dist-row" onclick="loadDistributor('NG')">
+            <div class="dist-init">NG</div>
+            <div><div class="dist-name">Napender Goswami</div><div class="dist-meta">Delhi West · Ter-5 · <span style="color:var(--green);font-weight:600">2 cross + 2 up-sell</span></div></div>
+            <div class="dist-right"><div class="dist-val">₹5.57L</div><div class="dist-lift">+₹20k lift</div></div>
+          </div>
+          <div class="dist-row" onclick="loadDistributor('KP')">
+            <div class="dist-init">KP</div>
+            <div><div class="dist-name">Kunwar Pal 2</div><div class="dist-meta">Delhi South · 38A · <span style="color:var(--blue);font-weight:600">5 up-sell</span></div></div>
+            <div class="dist-right"><div class="dist-val">₹10.55L</div><div class="dist-lift">+₹22k lift</div></div>
+          </div>
+          <div class="dist-row" onclick="loadDistributor('BT')">
+            <div class="dist-init">BT</div>
+            <div><div class="dist-name">Bhushan Dairy Shop</div><div class="dist-meta">Delhi South · 14A · <span style="color:var(--blue);font-weight:600">5 up-sell</span></div></div>
+            <div class="dist-right"><div class="dist-val">₹47.3L</div><div class="dist-lift">+₹39k lift</div></div>
+          </div>
+          <div class="dist-row" onclick="loadDistributor('GE')">
+            <div class="dist-init">GE</div>
+            <div><div class="dist-name">Goyal Enterprises</div><div class="dist-meta">Delhi South · 31A · <span style="color:var(--green);font-weight:600">1 cross + 4 up-sell</span></div></div>
+            <div class="dist-right"><div class="dist-val">₹8.2L</div><div class="dist-lift">+₹18k lift</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <nav class="navbar">
+      <button class="nav-btn nav-active" onclick="showScreen(1)" aria-label="Home"><i class="ti ti-home"></i><span class="nav-lbl">Home</span></button>
+      <button class="nav-btn" onclick="showScreen(2)" aria-label="Distributor"><i class="ti ti-users"></i><span class="nav-lbl">Distributor</span></button>
+      <button class="nav-btn" onclick="showScreen(3)" aria-label="Uplift"><i class="ti ti-trending-up"></i><span class="nav-lbl">Uplift</span></button>
+      <button class="nav-btn" aria-label="Settings"><i class="ti ti-settings"></i><span class="nav-lbl">Settings</span></button>
+    </nav>
+  </div>
+
+  <!-- ============ SCREEN 2: DISTRIBUTOR 360 ============ -->
+  <div class="screen" id="s2">
+    <div class="scrollable">
+      <div class="back-row">
+        <button class="back-btn" onclick="showScreen(1)" aria-label="Back"><i class="ti ti-arrow-left"></i></button>
+        <div style="flex:1">
+          <div class="back-title" id="d-name">Napender Goswami</div>
+          <div class="back-sub" id="d-sub">Delhi West · Ter-5 · ID 70305</div>
+        </div>
+        <span class="badge badge-green">Active</span>
+      </div>
+      <div class="section">
+        <div class="stat-row">
+          <div class="stat-box"><div class="stat-lbl">Expected (X)</div><div class="stat-val" id="d-x">₹5.37L</div><div class="stat-chg kpi-neu" id="d-xv">~9.8k units</div></div>
+          <div class="stat-box"><div class="stat-lbl">If closed (Y)</div><div class="stat-val" style="color:var(--green)" id="d-y">₹5.57L</div><div class="stat-chg" style="color:var(--green)" id="d-inc">+₹20k</div></div>
+          <div class="stat-box"><div class="stat-lbl">Pitches</div><div class="stat-val" id="d-np">5</div><div class="stat-chg kpi-neu" id="d-mix">2 cross+2 up</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Distributor snapshot</div>
+        <div class="card">
+          <div class="snap-grid">
+            <div><div class="k">Territory</div><div class="v" id="d-terr">Delhi West Ter-5</div></div>
+            <div><div class="k">Storage type</div><div class="v" id="d-storage">Ambient + Chilled</div></div>
+            <div><div class="k">Lifetime value</div><div class="v" id="d-total">₹62.4L</div></div>
+            <div><div class="k">Lifetime volume</div><div class="v" id="d-totvol">113.7L units</div></div>
+            <div><div class="k">Run-rate trend</div><div class="v" id="d-trend" style="color:var(--green)">Accelerating ↑</div></div>
+            <div><div class="k">SKUs active</div><div class="v" id="d-skus">23 of 160</div></div>
+            <div><div class="k">Category gap</div><div class="v" id="d-gap" style="color:var(--amber)">Ghee, Curd</div></div>
+            <div><div class="k">Last order vol.</div><div class="v" id="d-lastvol">10,581 units</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Previous orders</div>
+        <div class="card" style="padding:4px 18px" id="d-orders">
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Revenue trend — last 8 months</div>
+        <div class="card">
+          <div style="position:relative;width:100%;height:150px">
+            <canvas id="trendChart" role="img" aria-label="Monthly revenue rising from 4.1L to 6.2L">Oct 4.1L to May 6.2L</canvas>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Top products by volume</div>
+        <div class="card" style="padding:6px 18px" id="d-topskus">
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Category penetration <span style="text-transform:none;font-weight:500;color:var(--ink-3)">· vs route peers (100% = peer median)</span></div>
+        <div class="card">
+          <div style="position:relative;width:100%;height:150px">
+            <canvas id="catChart" role="img" aria-label="Milk 95%, Lassi 40%, Ghee 20%, Curd 0%, Paneer 0%">Milk 95, Lassi 40, Ghee 20, Curd 0, Paneer 0</canvas>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Peer comparison · Ter-5</div>
+        <div class="card">
+          <div class="cmp-row"><span style="color:var(--ink-2);font-size:13px">Metric</span><div class="cmp-vals" style="font-size:13px;color:var(--ink-2)"><span>This</span><span>Route avg</span></div></div>
+          <div class="cmp-row"><span>Avg monthly value</span><div class="cmp-vals"><span class="me">₹5.7L</span><span class="avg">₹5.1L</span></div></div>
+          <div class="cmp-row"><span>SKU breadth</span><div class="cmp-vals"><span class="me">23</span><span class="avg">31</span></div></div>
+          <div class="cmp-row"><span>Ghee adoption</span><div class="cmp-vals"><span class="me" style="color:var(--red)">20%</span><span class="avg">100%</span></div></div>
+        </div>
+      </div>
+    </div>
+    <nav class="navbar">
+      <button class="nav-btn" onclick="showScreen(1)" aria-label="Home"><i class="ti ti-home"></i><span class="nav-lbl">Home</span></button>
+      <button class="nav-btn nav-active" onclick="showScreen(2)" aria-label="Distributor"><i class="ti ti-users"></i><span class="nav-lbl">Distributor</span></button>
+      <button class="nav-btn" onclick="showScreen(3)" aria-label="Uplift"><i class="ti ti-trending-up"></i><span class="nav-lbl">Uplift</span></button>
+      <button class="nav-btn" aria-label="Settings"><i class="ti ti-settings"></i><span class="nav-lbl">Settings</span></button>
+    </nav>
+  </div>
+
+  <!-- ============ SCREEN 3: SALES UPLIFT ============ -->
+  <div class="screen" id="s3">
+    <div class="scrollable">
+      <div class="back-row">
+        <button class="back-btn" onclick="showScreen(2)" aria-label="Back"><i class="ti ti-arrow-left"></i></button>
+        <div style="flex:1">
+          <div class="back-title">Sales Uplift</div>
+          <div class="back-sub" id="u-name">Napender Goswami · what-if</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="lift-box">
+          <div class="lift-cap">Revenue potential today</div>
+          <div class="lift-row">
+            <div><div style="font-size:12px;color:var(--ink-2);font-weight:600">Baseline (X)</div><div class="lift-x" id="xVal">₹5.37L</div></div>
+            <i class="ti ti-arrow-right lift-arrow"></i>
+            <div><div style="font-size:12px;color:var(--green);font-weight:600">Target (Y)</div><div class="lift-y" id="yVal">₹5.57L</div></div>
+            <div class="lift-pct" id="liftPct">+3.7%</div>
+          </div>
+          <div class="lift-sub">
+            <div class="lift-sub-box"><div class="lift-sub-lbl">Incremental</div><div class="lift-sub-val" style="color:var(--green)" id="incVal">+₹19.9k</div></div>
+            <div class="lift-sub-box"><div class="lift-sub-lbl">Pitches</div><div class="lift-sub-val" id="pitchCount">5 / 5</div></div>
+            <div class="lift-sub-box"><div class="lift-sub-lbl">Top priority</div><div class="lift-sub-val" style="color:var(--green)" id="u-prio">High</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:16px;font-weight:700;margin-bottom:16px">What-if: pitches you'll close</div>
+          <div class="slider-wrap">
+            <div class="slider-label-row"><span>Cross-sell pitches</span><span class="slider-val" id="csLbl">3 of 3</span></div>
+            <input type="range" min="0" max="3" value="3" step="1" id="csSlider" aria-label="Cross-sell pitches">
+          </div>
+          <div class="slider-wrap" style="margin-bottom:10px">
+            <div class="slider-label-row"><span>Up-sell pitches</span><span class="slider-val" id="usLbl">2 of 2</span></div>
+            <input type="range" min="0" max="2" value="2" step="1" id="usSlider" aria-label="Up-sell pitches">
+          </div>
+          <div class="pot-track"><div class="pot-fill" id="potBar"></div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Recommendations</div>
+        <div id="u-recs">
+        </div>
+      </div>
+    </div>
+    <nav class="navbar">
+      <button class="nav-btn" onclick="showScreen(1)" aria-label="Home"><i class="ti ti-home"></i><span class="nav-lbl">Home</span></button>
+      <button class="nav-btn" onclick="showScreen(2)" aria-label="Distributor"><i class="ti ti-users"></i><span class="nav-lbl">Distributor</span></button>
+      <button class="nav-btn nav-active" onclick="showScreen(3)" aria-label="Uplift"><i class="ti ti-trending-up"></i><span class="nav-lbl">Uplift</span></button>
+      <button class="nav-btn" aria-label="Settings"><i class="ti ti-settings"></i><span class="nav-lbl">Settings</span></button>
+    </nav>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+var DATA = {"NG":{"name":"NAPENDER GOSWAMI","id":70305,"total":"₹6275.2L","active_skus":93,"prev":[{"day":"02","mon":"May","top":"Classic Toned Milk Curd 200g","skus":30,"units":"11,382","val":"₹5.98L"},{"day":"01","mon":"May","top":"Classic Toned Milk Curd 200g","skus":27,"units":"10,128","val":"₹5.44L"},{"day":"30","mon":"Apr","top":"Classic Toned Milk Curd 200g","skus":31,"units":"10,317","val":"₹5.55L"},{"day":"29","mon":"Apr","top":"Classic Toned Milk Curd 200g","skus":36,"units":"10,369","val":"₹5.58L"},{"day":"28","mon":"Apr","top":"Classic Curd 1Kg Ip","skus":35,"units":"10,581","val":"₹5.64L"}],"trend_labels":["Jul","Aug","Sep","Oct","Nov","Dec","Apr","May"],"trend_vals":[163.0,163.2,182.3,163.9,166.9,174.1,171.3,11.4],"topskus":[{"name":"Cow Milk  1/2 L (H)","pct":100,"vol":"3,545,935"},{"name":"Cow Milk  1 L (H)","pct":55,"vol":"1,974,396"},{"name":"Fcm1/2 L","pct":34,"vol":"1,211,670"},{"name":"Toned Milk 1 L","pct":27,"vol":"984,537"},{"name":"Full Cream Milk 1 L","pct":18,"vol":"638,599"}],"x":536805,"y":556761,"x_disp":"₹5.37L","y_disp":"₹5.57L","recs":[{"sku":"Cow Ghee 1 L Ceka Pack","cross":true,"vol":10,"val":"₹4,940","conf":46,"prio":"Medium"},{"sku":"Curd 5 Kg (Ip)","cross":true,"vol":71,"val":"₹4,673","conf":46,"prio":"Medium"},{"sku":"Toned Milk (6 Ltr Pouch)Poly P","cross":false,"vol":66,"val":"₹3,258","conf":58,"prio":"High"},{"sku":"Cow Ghee 500 Ml Ceka Pack","cross":true,"vol":8,"val":"₹3,938","conf":46,"prio":"Medium"},{"sku":"M.Dairy Ghee 1Ltr.Cekapack-Agm","cross":false,"vol":6,"val":"₹3,147","conf":56,"prio":"High"}],"ncross":3,"nup":2,"sub":"Delhi West · Ter-5 · ID 70305","cat":[100,100,75,100,100],"skus_disp":"93 of 160","storage":"Chilled + Ambient","trend":"Declining ↓","tot_val":"₹6275.2L","tot_vol":"113.7L units","last_vol":"21,526","gap":"Ghee, Lassi"},"KP":{"name":"KUNWAR PAL 2","id":70005,"total":"₹11812.6L","active_skus":95,"prev":[{"day":"03","mon":"May","top":"Full Cream Milk 1 L","skus":7,"units":"610","val":"₹0.38L"},{"day":"02","mon":"May","top":"Fcm1/2 L","skus":24,"units":"18,176","val":"₹10.72L"},{"day":"01","mon":"May","top":"Fcm1/2 L","skus":18,"units":"16,836","val":"₹9.91L"},{"day":"30","mon":"Apr","top":"Fcm1/2 L","skus":26,"units":"17,936","val":"₹10.59L"},{"day":"29","mon":"Apr","top":"Fcm1/2 L","skus":27,"units":"19,307","val":"₹11.36L"}],"trend_labels":["Jul","Aug","Sep","Oct","Nov","Dec","Apr","May"],"trend_vals":[317.6,317.6,310.7,290.7,279.3,323.3,325.1,21.0],"topskus":[{"name":"Fcm1/2 L","pct":100,"vol":"8,003,117"},{"name":"Cow Milk  1/2 L (H)","pct":82,"vol":"6,572,530"},{"name":"Full Cream Milk 1 L","pct":15,"vol":"1,210,267"},{"name":"Cow Milk  1 L (H)","pct":13,"vol":"1,067,876"},{"name":"Super- T 140 Ml","pct":11,"vol":"943,417"}],"x":1032864,"y":1054770,"x_disp":"₹10.33L","y_disp":"₹10.55L","recs":[{"sku":"Mango Lf Lassi 200Ml Pouch","cross":false,"vol":205,"val":"₹8,614","conf":61,"prio":"High"},{"sku":"M.Dairy Ghee 1Ltr.Cekapack-Agm","cross":false,"vol":9,"val":"₹4,670","conf":61,"prio":"High"},{"sku":"Sweet Lassi (Low Fat) 270 Ml","cross":false,"vol":108,"val":"₹3,344","conf":61,"prio":"High"},{"sku":"Standardised Milk 1/2 L","cross":false,"vol":66,"val":"₹3,601","conf":38,"prio":"Low"},{"sku":"Toned Milk (6 Ltr Pouch)Poly P","cross":false,"vol":34,"val":"₹1,678","conf":60,"prio":"High"}],"ncross":0,"nup":5,"sub":"Delhi South · 38A · ID 70005","cat":[100,100,100,76,100],"skus_disp":"95 of 160","storage":"Ambient + Chilled","trend":"Declining ↓","tot_val":"₹11812.6L","tot_vol":"202.9L units","last_vol":"35,622","gap":"Curd, Paneer"},"BT":{"name":"BHUSHAN THE DAIRY SHOP","id":70002,"total":"₹8657.9L","active_skus":84,"prev":[{"day":"31","mon":"Dec","top":"Full Cream Milk 1 L","skus":15,"units":"13,203","val":"₹8.07L"},{"day":"30","mon":"Dec","top":"Full Cream Milk 1 L","skus":14,"units":"12,117","val":"₹7.41L"},{"day":"29","mon":"Dec","top":"Full Cream Milk 1 L","skus":16,"units":"12,326","val":"₹7.53L"},{"day":"28","mon":"Dec","top":"Full Cream Milk 1 L","skus":14,"units":"13,371","val":"₹8.18L"},{"day":"27","mon":"Dec","top":"Full Cream Milk 1 L","skus":15,"units":"13,386","val":"₹8.19L"}],"trend_labels":["May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"trend_vals":[237.8,220.9,247.6,248.7,245.2,231.0,206.1,233.0],"topskus":[{"name":"Cow Milk  1/2 L (H)","pct":100,"vol":"5,273,772"},{"name":"Fcm1/2 L","pct":93,"vol":"4,909,803"},{"name":"Super- T 140 Ml","pct":20,"vol":"1,105,637"},{"name":"T M1/2 L","pct":14,"vol":"740,216"},{"name":"Cow Milk  1 L (H)","pct":11,"vol":"613,255"}],"x":800109,"y":4729742,"x_disp":"₹8.00L","y_disp":"₹47.30L","recs":[{"sku":"Fcm1/2 L","cross":false,"vol":25985,"val":"₹1,679,626","conf":39,"prio":"Low"},{"sku":"Cow Milk  1/2 L (H)","cross":false,"vol":26731,"val":"₹1,467,356","conf":38,"prio":"Low"},{"sku":"Super- T 140 Ml","cross":false,"vol":6036,"val":"₹363,234","conf":36,"prio":"Low"},{"sku":"Cow Milk  1 L (H)","cross":false,"vol":4244,"val":"₹231,511","conf":39,"prio":"Low"},{"sku":"Full Cream Milk 1 L","cross":false,"vol":2907,"val":"₹187,905","conf":38,"prio":"Low"}],"ncross":0,"nup":5,"sub":"Delhi South · 14A · ID 70002","cat":[100,87,100,100,47],"skus_disp":"84 of 160","storage":"Ambient + Chilled","trend":"Accelerating ↑","tot_val":"₹8657.9L","tot_vol":"147.5L units","last_vol":"381,464","gap":"Paneer, Lassi"},"GE":{"name":"GOYAL ENTERPRISES","id":74013,"total":"₹5309.3L","active_skus":84,"prev":[{"day":"02","mon":"May","top":"Classic Curd 200g PP","skus":18,"units":"6,584","val":"₹3.88L"},{"day":"01","mon":"May","top":"Classic Curd 200g PP","skus":16,"units":"6,714","val":"₹3.94L"},{"day":"30","mon":"Apr","top":"Classic Curd 200g PP","skus":18,"units":"6,466","val":"₹3.81L"},{"day":"29","mon":"Apr","top":"Classic Curd 200g PP","skus":20,"units":"6,833","val":"₹4.00L"},{"day":"28","mon":"Apr","top":"Classic Curd 200g PP","skus":18,"units":"7,173","val":"₹4.18L"}],"trend_labels":["Jul","Aug","Sep","Oct","Nov","Dec","Apr","May"],"trend_vals":[127.3,110.2,113.2,102.5,98.7,97.5,107.4,7.8],"topskus":[{"name":"Cow Milk  1/2 L (H)","pct":100,"vol":"2,903,307"},{"name":"Fcm1/2 L","pct":88,"vol":"2,558,253"},{"name":"Cow Milk  1 L (H)","pct":28,"vol":"841,414"},{"name":"Full Cream Milk 1 L","pct":25,"vol":"746,170"},{"name":"T M1/2 L","pct":15,"vol":"457,453"}],"x":478790,"y":484173,"x_disp":"₹4.79L","y_disp":"₹4.84L","recs":[{"sku":"Super T Plus 5% Fat & 10% Snf ","cross":true,"vol":22,"val":"₹1,361","conf":46,"prio":"Medium"},{"sku":"Tadka Chach 425 Ml Pouch","cross":false,"vol":48,"val":"₹1,420","conf":42,"prio":"Low"},{"sku":"Rabri Lassi 180 Ml","cross":false,"vol":10,"val":"₹914","conf":61,"prio":"High"},{"sku":"Plain Probiotic Chach 480 Ml","cross":false,"vol":33,"val":"₹849","conf":61,"prio":"High"},{"sku":"Sweet Lassi 180 Ml","cross":false,"vol":9,"val":"₹839","conf":61,"prio":"High"}],"ncross":1,"nup":4,"sub":"Delhi South · 31A · ID 74013","cat":[79,100,34,69,100],"skus_disp":"84 of 160","storage":"Chilled + Ambient","trend":"Declining ↓","tot_val":"₹5309.3L","tot_vol":"92.1L units","last_vol":"13,298","gap":"Ghee, Curd"}};
+var CUR = 'NG';      // currently displayed distributor
+var trendChart=null, catChart=null;
+
+function showScreen(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  document.querySelectorAll('#s'+n+' .nav-btn').forEach((b,i)=>b.classList.toggle('nav-active',i===n-1));
+  var sc=document.querySelector('#s'+n+' .scrollable'); if(sc) sc.scrollTop=0;
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function loadDistributor(code){
+  CUR = code;
+  var d = DATA[code];
+  // header + stats
+  document.getElementById('d-name').textContent = d.name.replace(/\b\w+/g,function(w){return w[0]+w.slice(1).toLowerCase();});
+  document.getElementById('d-sub').textContent = d.sub;
+  document.getElementById('d-x').textContent = d.x_disp;
+  document.getElementById('d-y').textContent = d.y_disp;
+  document.getElementById('d-xv').textContent = '≈ '+Math.round(d.x/60).toLocaleString()+' units';
+  var inc = d.y - d.x;
+  document.getElementById('d-inc').textContent = '+₹'+Math.round(inc/1000)+'k';
+  document.getElementById('d-np').textContent = d.recs.length;
+  document.getElementById('d-mix').textContent = d.ncross+' cross+'+d.nup+' up';
+  document.getElementById('d-total').textContent = d.tot_val;
+  document.getElementById('d-totvol').textContent = d.tot_vol;
+  document.getElementById('d-skus').textContent = d.skus_disp;
+  document.getElementById('d-terr').textContent = d.sub.split(' · ID')[0];
+  document.getElementById('d-storage').textContent = d.storage;
+  var tr=document.getElementById('d-trend'); tr.textContent=d.trend;
+  tr.style.color = d.trend.indexOf('↑')>=0?'var(--green)':(d.trend.indexOf('↓')>=0?'var(--red)':'var(--ink-2)');
+  document.getElementById('d-gap').textContent = d.gap;
+  document.getElementById('d-lastvol').textContent = d.prev.length?d.prev[0].units+' units':'—';
+
+  // previous orders
+  var oh = d.prev.map(function(o){
+    return '<div class="order-row">'+
+      '<div class="order-date"><div class="order-day">'+o.day+'</div><div class="order-mon">'+o.mon+'</div></div>'+
+      '<div class="order-mid"><div class="order-top">'+esc(o.top)+'</div><div class="order-meta">'+o.skus+' SKUs · '+o.units+' units</div></div>'+
+      '<div class="order-val">'+o.val+'</div></div>';
+  }).join('');
+  document.getElementById('d-orders').innerHTML = oh;
+
+  // top products
+  var sh = d.topskus.map(function(s){
+    return '<div class="sku-row"><div class="sku-name">'+esc(s.name)+'</div>'+
+      '<div class="sku-bar-wrap"><div class="sku-bar-fill" style="width:'+s.pct+'%"></div></div>'+
+      '<div class="sku-vol">'+s.vol+'</div></div>';
+  }).join('');
+  document.getElementById('d-topskus').innerHTML = sh;
+
+  // uplift screen
+  document.getElementById('u-name').textContent = d.name.replace(/\b\w+/g,function(w){return w[0]+w.slice(1).toLowerCase();})+' · what-if';
+  buildRecs(code);
+  renderCharts(code);
+  showScreen(2);
+}
+
+function buildRecs(code){
+  var d = DATA[code];
+  var html = d.recs.map(function(r){
+    var cls = r.cross ? 'rec-type-cross' : 'rec-type-up';
+    var lbl = r.cross ? 'Cross-sell' : 'Up-sell +20%';
+    var bar = r.cross ? 'var(--green)' : 'var(--blue)';
+    var icon = r.cross ? 'ti-users' : 'ti-trending-up';
+    var driver = r.cross ? 'Peers on route stock this — white-space gap to close.'
+                         : 'Run-rate accelerating month-on-month. Pitch a 20% expansion.';
+    var pc = r.prio==='High'?'prio-high':(r.prio==='Medium'?'prio-med':'prio-low');
+    var pw = r.prio==='High'?100:(r.prio==='Medium'?60:30);
+    var pbar = r.prio==='High'?'var(--green)':(r.prio==='Medium'?'#E0A93B':'#C9CFCB');
+    return '<div class="rec-card">'+
+      '<div class="rec-head"><div class="rec-sku">'+esc(r.sku)+'</div><span class="'+cls+'">'+lbl+'</span></div>'+
+      '<div class="rec-metrics">'+
+        '<div class="rec-metric"><div class="rec-metric-lbl">Volume</div><div class="rec-metric-val">'+r.vol+'</div></div>'+
+        '<div class="rec-metric"><div class="rec-metric-lbl">Value</div><div class="rec-metric-val">'+r.val+'</div></div>'+
+        '<div class="rec-metric"><div class="rec-metric-lbl">Priority</div><div class="rec-metric-val '+pc+'">'+r.prio+'</div></div>'+
+      '</div>'+
+      '<div class="rec-driver"><i class="ti '+icon+'"></i> '+driver+'</div>'+
+      '<div class="conf-bar-wrap"><div class="conf-bar" style="width:'+pw+'%;background:'+pbar+'"></div></div>'+
+      '</div>';
+  }).join('');
+  document.getElementById('u-recs').innerHTML = html;
+  setupSliders(code);
+}
+
+function setupSliders(code){
+  var d = DATA[code];
+  // top priority label
+  var order={'High':3,'Medium':2,'Low':1};
+  var topP = d.recs.reduce(function(a,r){return order[r.prio]>order[a]?r.prio:a;},'Low');
+  var up=document.getElementById('u-prio');
+  if(up){ up.textContent=topP; up.style.color = topP==='High'?'var(--green)':(topP==='Medium'?'#B8860B':'var(--ink-2)'); }
+  var CS = d.recs.filter(r=>r.cross).map(r=>parseFloat(String(r.val).replace(/[₹,]/g,'')));
+  var US = d.recs.filter(r=>!r.cross).map(r=>parseFloat(String(r.val).replace(/[₹,]/g,'')));
+  var BASE = d.x;
+  var csS=document.getElementById('csSlider'), usS=document.getElementById('usSlider');
+  csS.max = CS.length; csS.value = CS.length;
+  usS.max = US.length; usS.value = US.length;
+  function upd(){
+    var cs=+csS.value, us=+usS.value;
+    document.getElementById('csLbl').textContent = cs+' of '+CS.length;
+    document.getElementById('usLbl').textContent = us+' of '+US.length;
+    var inc = CS.slice(0,cs).reduce((a,b)=>a+b,0)+US.slice(0,us).reduce((a,b)=>a+b,0);
+    var y=BASE+inc, pct = BASE>0 ? ((inc/BASE)*100).toFixed(1) : '0.0';
+    document.getElementById('xVal').textContent = '₹'+(BASE/100000).toFixed(2)+'L';
+    document.getElementById('yVal').textContent = '₹'+(y/100000).toFixed(2)+'L';
+    document.getElementById('incVal').textContent = '+₹'+Math.round(inc/1000)+'k';
+    document.getElementById('liftPct').textContent = '+'+pct+'%';
+    document.getElementById('pitchCount').textContent = (cs+us)+' / '+d.recs.length;
+    var max = CS.reduce((a,b)=>a+b,0)+US.reduce((a,b)=>a+b,0);
+    document.getElementById('potBar').style.width = Math.round(max>0?inc/max*100:0)+'%';
+  }
+  csS.oninput=upd; usS.oninput=upd; upd();
+}
+
+function renderCharts(code){
+  if(typeof Chart==='undefined') return;
+  var d = DATA[code];
+  var grid='rgba(0,0,0,0.06)', lab='#8A938E';
+  var n = d.trend_vals.length;
+  var tcol = d.trend_vals.map(function(_,i){ return i>=n-1?'#0F8A63':(i>=n-3?'#5DCAA5':'#9FE1CB'); });
+  if(trendChart) trendChart.destroy();
+  trendChart = new Chart(document.getElementById('trendChart'),{
+    type:'bar',
+    data:{labels:d.trend_labels,datasets:[{data:d.trend_vals,backgroundColor:tcol,borderRadius:5,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>'₹'+v.raw+'L'}}},
+      scales:{x:{grid:{display:false},ticks:{color:lab,font:{size:12}}},
+        y:{grid:{color:grid},ticks:{color:lab,font:{size:12},callback:v=>'₹'+v+'L'},border:{display:false}}}}
+  });
+  if(catChart) catChart.destroy();
+  var labelPlugin={
+    id:'catLabels',
+    afterDatasetsDraw:function(c){
+      var ctx=c.ctx, meta=c.getDatasetMeta(0);
+      ctx.save();
+      ctx.font='600 12px Inter, sans-serif';
+      ctx.fillStyle='#5A6560';
+      ctx.textBaseline='middle';
+      meta.data.forEach(function(bar,i){
+        var v=c.data.datasets[0].data[i];
+        ctx.fillText(v+'%', bar.x+6, bar.y);
+      });
+      ctx.restore();
+    }
+  };
+  catChart = new Chart(document.getElementById('catChart'),{
+    type:'bar',
+    data:{labels:['Milk','Lassi','Ghee','Curd','Paneer'],
+      datasets:[{data:d.cat,
+        backgroundColor:d.cat.map(v=>v>=70?'#0F8A63':(v>=30?'#5DCAA5':(v>0?'#E0A93B':'#E08A85'))),
+        borderRadius:5,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      layout:{padding:{right:34}},
+      plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{x:{max:100,grid:{color:grid},ticks:{color:lab,font:{size:12},callback:v=>v+'%'},border:{display:false}},
+        y:{grid:{display:false},ticks:{color:lab,font:{size:13}}}}},
+    plugins:[labelPlugin]
+  });
+}
+
+// initialise with the default distributor so screens 2/3 are populated
+function fitPhone(){
+  // Force the phone frame to the real visible height — reliable even in
+  // in-app browsers / WebViews where 100dvh is miscalculated.
+  var ph=document.querySelector('.phone');
+  if(!ph) return;
+  if(window.innerWidth<=600){
+    ph.style.height=window.innerHeight+'px';
+  }else{
+    ph.style.height='';   // desktop: revert to CSS (capped mockup)
+  }
+}
+window.addEventListener('resize',fitPhone);
+window.addEventListener('orientationchange',fitPhone);
+
+window.addEventListener('load',function(){
+  // initialise default distributor so screens 2/3 are populated, then show Home
+  loadDistributor(CUR);
+  showScreen(1);
+  fitPhone();
+});
+</script>
+</body>
+</html>
